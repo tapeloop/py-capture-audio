@@ -7,5 +7,3 @@ def play_wav(filename):
     sd.play(data, samplerate)
     sd.wait()
     print("▶️ Playback finished.")
-
-play_wav("recording_1752168199.wav")

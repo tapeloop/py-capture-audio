@@ -3,7 +3,14 @@ import numpy as np
 import keyboard
 import wave
 import time
+import scipy.io.wavfile as wav
 
+# Load and play a WAV file
+def play_wav(filename):
+    samplerate, data = wav.read(filename)
+    sounddevice.play(data, samplerate)
+    sounddevice.wait()
+    print("▶️ Playback finished.")
 
 def get_input_device():
     print("\nAvailable audio input devices:")
@@ -44,7 +51,8 @@ def audio_callback(indata, frames, time, status):
     if is_recording:
         recording.append(indata.copy())
 
-with sounddevice.InputStream(callback=audio_callback, channels=1, samplerate=fs, device=get_input_device()):
+## need to set the inputstream to use speciifc devie
+with sounddevice.InputStream(callback=audio_callback, channels=1, samplerate=fs):
     while True:
         if keyboard.is_pressed("space"):
             toggle_recording()
@@ -54,6 +62,10 @@ with sounddevice.InputStream(callback=audio_callback, channels=1, samplerate=fs,
             print("Exiting.")
             break
         time.sleep(0.05)
+
+
+# if keyboard.is_pressed("k"):
+#     play_wav(recording[0])
 
 
 # from source import get_source

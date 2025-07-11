@@ -1,0 +1,35 @@
+# Virtual environment folders
+venv/
+.venv/
+
+# Byte-compiled / cache files
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Distribution / packaging
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# PyCharm project files
+.idea/
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
+
+# dotenv and secrets
+.env
+.env.*
+
+# VS Code settings (optional, in case you use VS Code too)
+.vscode/
