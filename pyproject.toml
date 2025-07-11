@@ -28,7 +28,9 @@ dependencies = [
   "sounddevice",
   "soundfile",
   "keyboard",
-  "pygame"
+  "pygame",
+  "numpy",
+  "scipy"
 ]
 
 [project.urls]
