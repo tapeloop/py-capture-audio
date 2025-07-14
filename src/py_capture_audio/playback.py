@@ -1,3 +1,5 @@
+""" simple playback feature used when previewing sounds """
+
 import sounddevice as sd
 import scipy.io.wavfile as wav
 

@@ -1,3 +1,5 @@
+""" module for identifying and handling source of audio input """
+
 import enum
 import platform
 
