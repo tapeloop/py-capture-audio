@@ -6,6 +6,8 @@ from time import sleep
 from .playback import play_audio
 import logging
 
+from .source import get_source
+
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 
 # TODO - Add support for different audio inputs
@@ -56,6 +58,12 @@ def record_audio(filename="output.wav", samplerate=44100, channels=2):
         return None
 
 def handle_keys():
+    """
+    Selects the appropriate audio input device and manages recording and playback.
+    """
+
+    source = get_source()
+
     last_sample = None
     logging.info("Press SPACE to record, P to play last sample, ESC to exit.")
     while True:
