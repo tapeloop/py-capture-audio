@@ -68,36 +68,72 @@ from time import sleep
 
 import logging
 import sounddevice
-import soundfile
-import scipy.io.wavfile as wav
-from time import sleep
+import numpy as np
+import keyboard
+import wave
+import time
 
-# Configure logger
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+fs = 44100  # Sample rate
+recording = []
+is_recording = False
+
 def get_input_device():
-    logger.info("Available audio input devices:")
     for i, dev in enumerate(sounddevice.query_devices()):
         if "Stereo Mix" in dev['name']:
             return i
 
+def audio_callback(indata, frames, time_info, status):
+    global recording, is_recording
+    if is_recording:
+        recording.append(indata.copy())
+
+def save_recording(audio):
+    filename = f"recording_{int(time.time())}.wav"
+    audio = (audio * 32767).astype(np.int16)
+    with wave.open(filename, 'wb') as wf:
+        wf.setnchannels(1)
+        wf.setsampwidth(2)
+        wf.setframerate(fs)
+        wf.writeframes(audio.tobytes())
+    logger.info(f"💾 Saved to {filename}")
+    return filename
+
 def play_audio(filename):
+    import scipy.io.wavfile as wav
     samplerate, data = wav.read(filename)
     sounddevice.play(data, samplerate)
     sounddevice.wait()
     logger.info("▶️ Playback finished.")
 
-def record_audio(filename="output.wav", duration=5, samplerate=44100, channels=2):
+def record_audio():
+    global is_recording, recording
     input_device = get_input_device()
-    logger.info(f"🎙️ Recording from device index {input_device}...")
-    audio = sounddevice.rec(int(duration * samplerate), samplerate=samplerate, channels=channels, device=input_device)
-    sounddevice.wait()
-    soundfile.write(filename, audio, samplerate)
-    logger.info(f"✅ Saved to '{filename}'")
-    sleep(5)
-    logger.info(f"playing {filename}")
-    play_audio(filename)
+    logger.info("Press SPACE to start/stop recording. Press ESC to quit.")
+    with sounddevice.InputStream(callback=audio_callback, channels=1, samplerate=fs, device=input_device):
+        while True:
+            if keyboard.is_pressed("space"):
+                if not is_recording:
+                    logger.info("🔴 Recording...")
+                    # recording = []
+                    is_recording = True
+                else:
+                    logger.info("⏹️ Stopped recording.")
+                    is_recording = False
+                    if recording:  # Only concatenate if not empty
+                        audio = np.concatenate(recording)
+                        filename = save_recording(audio)
+                        play_audio(filename)
+                    else:
+                        logger.warning("No audio data recorded.")
+                while keyboard.is_pressed("space"):
+                    time.sleep(0.1)
+            elif keyboard.is_pressed("esc"):
+                logger.info("Exiting.")
+                break
+            time.sleep(0.05)
 
 if __name__ == "__main__":
     record_audio()
