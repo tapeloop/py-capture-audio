@@ -66,37 +66,38 @@ from time import sleep
 #             break
 #         time.sleep(0.05)
 
-
+import logging
 import sounddevice
 import soundfile
 import scipy.io.wavfile as wav
+from time import sleep
 
+# Configure logger
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def get_input_device():
-    print("\nAvailable audio input devices:")
-    # look for Stereo Mix
+    logger.info("Available audio input devices:")
     for i, dev in enumerate(sounddevice.query_devices()):
         if "Stereo Mix" in dev['name']:
             return i
 
-def play_wav(filename):
+def play_audio(filename):
     samplerate, data = wav.read(filename)
     sounddevice.play(data, samplerate)
     sounddevice.wait()
-    print("▶️ Playback finished.")
-
+    logger.info("▶️ Playback finished.")
 
 def record_audio(filename="output.wav", duration=5, samplerate=44100, channels=2):
     input_device = get_input_device()
-    print(f"\n🎙️ Recording from device index {input_device}...")
+    logger.info(f"🎙️ Recording from device index {input_device}...")
     audio = sounddevice.rec(int(duration * samplerate), samplerate=samplerate, channels=channels, device=input_device)
     sounddevice.wait()
     soundfile.write(filename, audio, samplerate)
-    print(f"✅ Saved to '{filename}'")
+    logger.info(f"✅ Saved to '{filename}'")
     sleep(5)
-    print(f"playing {filename}")
-    play_wav(filename)
-
+    logger.info(f"playing {filename}")
+    play_audio(filename)
 
 if __name__ == "__main__":
     record_audio()
