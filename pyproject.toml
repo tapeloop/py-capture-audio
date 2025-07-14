@@ -33,6 +33,9 @@ dependencies = [
   "scipy"
 ]
 
+[project.scripts]
+py-capture-audio  = "py_capture_audio.capture:handle_keys"
+
 [project.urls]
 Documentation = "https://github.com/tapeloop/py-capture-audio#readme"
 Issues = "https://github.com/tapeloop/py-capture-audio/issues"
