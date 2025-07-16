@@ -1,3 +1,5 @@
+import os
+import sys
 import sounddevice
 import soundfile
 import numpy
@@ -5,6 +7,7 @@ import keyboard
 from time import sleep
 from .playback import play_audio
 import logging
+import datetime
 
 from .source import get_source
 
@@ -18,12 +21,15 @@ def get_input_device():
     for i, dev in enumerate(devices):
         logging.info(f"{i}: {dev['name']}")
         if "Stereo Mix" in dev['name']:
-            return i
-    idx = int(input("Enter device index: "))
-    return idx
+            return i, dev['default_samplerate'], dev['max_input_channels']
 
-def record_audio(filename="output.wav", samplerate=44100, channels=2):
-    input_device = 16 #get_input_device()
+
+
+def record_audio():
+    timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"output_{timestamp}.wav"
+    input_device, samplerate, channels = get_input_device()
+    logging.info(f"Using input device: {input_device} (Samplerate: {samplerate}, Channels: {channels})")
     frames = []
     recording = [False]
 
@@ -33,11 +39,13 @@ def record_audio(filename="output.wav", samplerate=44100, channels=2):
     sleep(0.2)
 
     def callback(indata, frame_count, time_info, status):
+        if status.input_overflow:
+            logging.warning("Input overflow detected!")
         if recording[0]:
             frames.append(indata.copy())
 
     recording[0] = True
-    with sounddevice.InputStream(samplerate=samplerate, channels=channels, device=input_device, callback=callback):
+    with sounddevice.InputStream(samplerate=samplerate, channels=channels, device=input_device, callback=callback, blocksize=1024):
         while True:
             if keyboard.is_pressed("space"):
                 logging.info("⏹️ Stopped recording.")
@@ -50,7 +58,7 @@ def record_audio(filename="output.wav", samplerate=44100, channels=2):
     logging.info(f"Frames recorded: {len(frames)}")
     if frames:
         audio = numpy.concatenate(frames)
-        soundfile.write(filename, audio, samplerate)
+        soundfile.write(filename, audio, int(samplerate))
         logging.info(f"✅ Saved to '{filename}'")
         return filename
     else:
